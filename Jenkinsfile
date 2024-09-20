@@ -22,11 +22,11 @@ pipeline {
             steps {
                 sshagent(['longbui_azure_ssh']) {
                     sh """
-                    rsync -az \
+                    rsync -avzO \
                         --exclude "__pycache__" \
                         -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" \
-                        "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE" \
                         "$env.WORKSPACE"
+                        "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE" \
                     """
                 }
             }

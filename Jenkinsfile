@@ -4,7 +4,7 @@ pipeline {
         SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
         SCM_BRANCH = "17.0"
         SCM_CREDENTIAL = "longbui99_github"
-        HOST_CREDENTIAL = "longbui_azure"
+        HOST_CREDENTIAL = "longbui_azure_ssh"
     }
 
     stages {

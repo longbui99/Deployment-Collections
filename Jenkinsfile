@@ -11,11 +11,10 @@ pipeline {
         stage('Pull') {
             steps {
                 sh "mkdir $env.WORKSPACE/source"
-                sh "cd source"
-                
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
                 credentialsId: "$SCM_CREDENTIAL"
+                path: "$env.WORKSPACE/source"
             }
         }
         stage("Sync"){

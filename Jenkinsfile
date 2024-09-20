@@ -5,7 +5,7 @@ pipeline {
         SCM_BRANCH = "17.0"
         SCM_CREDENTIAL = "longbui99_github"
         HOST_CREDENTIAL = "longbui_azure_ssh"
-        HOST_CREDS = credentials(env.HOST_CREDENTIAL)
+        HOST_CREDS = credentials($env.HOST_CREDENTIAL)
     }
 
     stages {

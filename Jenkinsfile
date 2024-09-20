@@ -4,7 +4,7 @@ pipeline {
         SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
         SCM_BRANCH = "17.0"
         SCM_CREDENTIAL = "longbui99_github"
-        HOST_CREDENTIAL = ""
+        HOST_CREDENTIAL = "longbui_azure"
     }
 
     stages {
@@ -19,12 +19,12 @@ pipeline {
             steps {
                 echo env.WORKSPACE
                 sh "ls -a -l"
-            }
-            sshagent(credentials: [env.HOST_CREDENTIAL]){
-                echo env.WORKSPACE
-                sh '''
-                    pwd
-                '''
+                sshagent(credentials: [env.HOST_CREDENTIAL]){
+                    echo env.WORKSPACE
+                    sh '''
+                        pwd
+                    '''
+                }
             }
         }
         stage("Test"){

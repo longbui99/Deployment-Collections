@@ -10,8 +10,9 @@ pipeline {
     stages {
         stage('Pull') {
             steps {
-                sh "cd source"
                 sh "mkdir $env.WORKSPACE/source"
+                sh "cd source"
+                
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
                 credentialsId: "$SCM_CREDENTIAL"

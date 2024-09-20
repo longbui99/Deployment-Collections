@@ -19,10 +19,8 @@ pipeline {
         }
         stage("Sync"){
             steps {
-                sshagent(credentials: [env.HOST_CREDENTIAL]) {
-                    sh '''
-                        ssh $HOST_CREDS_USR@$HOST_IP 'pwd'
-                    '''
+                sshagent(['longbui_azure_ssh']) {
+                    sh 'ssh -o StrictHostKeyChecking=no -l $HOST_CREDS_USR $HOST_IP uname -a'
                 }
             }
         }

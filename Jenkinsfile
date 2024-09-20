@@ -5,6 +5,7 @@ pipeline {
         SCM_BRANCH = "17.0"
         SCM_CREDENTIAL = "longbui99_github"
         HOST_CREDENTIAL = "longbui_azure_ssh"
+        HOST_CREDS = credentials($HOST_CREDENTIAL)
     }
 
     stages {
@@ -21,8 +22,8 @@ pipeline {
                 sh "ls -a -l"
                 sshagent(credentials: [env.HOST_CREDENTIAL]){
                     echo env.WORKSPACE
-                    sh '''
-                        pwd
+                    ssh '''
+                        ssh $HOST_CREDS_USER:$params.longbui_azure_host 'pwd'
                     '''
                 }
             }

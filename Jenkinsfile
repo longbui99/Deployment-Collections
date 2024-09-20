@@ -25,8 +25,8 @@ pipeline {
                     rsync -az \
                         --exclude "__pycache__" \
                         -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" \
-                        "$HOST_CREDS_USR@$HOST_IP:$env.WORKSPACE" \
-                        "$HOST_WORKSPACE"
+                        "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE" \
+                        "$env.WORKSPACE"
                     """
                 }
             }

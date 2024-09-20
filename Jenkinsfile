@@ -13,7 +13,7 @@ pipeline {
                 sh "mkdir $env.WORKSPACE/source"
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
-                credentialsId: "$SCM_CREDENTIAL"
+                credentialsId: "$SCM_CREDENTIAL",
                 path: "$env.WORKSPACE/source"
             }
         }

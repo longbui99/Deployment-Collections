@@ -24,7 +24,7 @@ pipeline {
                 sshagent(credentials: [env.HOST_CREDENTIAL]){
                     echo env.WORKSPACE
                     sh '''
-                        ssh $HOST_CREDS_USER:$HOST_IP 'pwd'
+                        ssh $HOST_CREDS_USR:$HOST_IP 'pwd'
                     '''
                 }
             }

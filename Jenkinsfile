@@ -9,6 +9,8 @@ pipeline {
 
     stages {
         stage('Pull') {
+            sh "mkdir $env.WORKSPACE/source"
+            sh "cd source"
             steps {
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
@@ -19,6 +21,7 @@ pipeline {
             steps {
                 echo env.WORKSPACE
             }
+            sh "ls -a -l"
             // sshagent(credentials: [env.HOST_CREDENTIAL]){
             //     echo env.WORKSPACE
             // }

@@ -7,6 +7,7 @@ pipeline {
         HOST_CREDENTIAL = "longbui_azure_ssh"
         HOST_IP = "20.41.116.177"
         HOST_CREDS = credentials("longbui_azure_ssh")
+        HOST_WORKSPACE = "/opt/odoo"
     }
 
     stages {
@@ -20,7 +21,13 @@ pipeline {
         stage("Sync"){
             steps {
                 sshagent(['longbui_azure_ssh']) {
-                    sh "ssh -o StrictHostKeyChecking=no $HOST_CREDS_USR@$HOST_IP 'cd /opt/odoo && pwd'"
+                    sh """
+                    rsync -az \
+                        --exclude "__pycache__" \
+                        -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" \
+                        "$HOST_CREDS_USR@$HOST_IP:$env.WORKSPACE" \
+                        "$HOST_WORKSPACE"
+                    """
                 }
             }
         }

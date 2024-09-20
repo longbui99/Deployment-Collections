@@ -11,6 +11,8 @@ pipeline {
         stage('Pull') {
             steps {
                 sh "mkdir $env.WORKSPACE/source"
+            }
+            steps {
                 sh "cd source"
             }
             steps {
@@ -22,6 +24,8 @@ pipeline {
         stage("Sync"){
             steps {
                 echo env.WORKSPACE
+            }
+            steps {
                 sh "ls -a -l"
             }
             // sshagent(credentials: [env.HOST_CREDENTIAL]){

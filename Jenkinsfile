@@ -10,11 +10,9 @@ pipeline {
     stages {
         stage('Pull') {
             steps {
-                sh "mkdir $env.WORKSPACE/source"
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
-                credentialsId: "$SCM_CREDENTIAL",
-                path: "$env.WORKSPACE/source"
+                credentialsId: "$SCM_CREDENTIAL"
             }
         }
         stage("Sync"){
@@ -22,9 +20,12 @@ pipeline {
                 echo env.WORKSPACE
                 sh "ls -a -l"
             }
-            // sshagent(credentials: [env.HOST_CREDENTIAL]){
-            //     echo env.WORKSPACE
-            // }
+            sshagent(credentials: [env.HOST_CREDENTIAL]){
+                echo env.WORKSPACE
+                sh '''
+                    pwd
+                '''
+            }
         }
         stage("Test"){
             steps {

@@ -9,9 +9,11 @@ pipeline {
 
     stages {
         stage('Pull') {
-            git url: "$SCM_REPO_URL",
-            branch: "$SCM_BRANCH",
-            credentialsId: "$SCM_CREDENTIAL"
+            steps {
+                git url: "$SCM_REPO_URL",
+                branch: "$SCM_BRANCH",
+                credentialsId: "$SCM_CREDENTIAL"
+            }
         }
         stage("Sync"){
             steps {

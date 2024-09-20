@@ -20,7 +20,7 @@ pipeline {
         stage("Sync"){
             steps {
                 sshagent(['longbui_azure_ssh']) {
-                    sh 'ssh -o StrictHostKeyChecking=no -l $HOST_CREDS_USR $HOST_IP uname -a'
+                    sh "ssh -o StrictHostKeyChecking=no $HOST_CREDS_USR@$HOST_IP 'cd /opt/odoo && pwd'"
                 }
             }
         }

@@ -19,10 +19,7 @@ pipeline {
         }
         stage("Sync"){
             steps {
-                echo env.WORKSPACE
-                sh "ls -a -l"
-                sshagent(credentials: [env.HOST_CREDENTIAL]){
-                    echo env.WORKSPACE
+                sshagent(credentials: [env.HOST_CREDENTIAL]) {
                     sh '''
                         ssh $HOST_CREDS_USR@$HOST_IP 'pwd'
                     '''

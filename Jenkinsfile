@@ -2,32 +2,34 @@ pipeline {
     agent any
     environment {
 
-        SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
-        SCM_BRANCH = "17.0"
-        SCM_CREDENTIAL = "longbui99_github"
-        HOST_CREDENTIAL = "longbui_azure_ssh"
-        HOST_IP = "20.41.116.177"
-        HOST_CREDS = credentials("longbui_azure_ssh")
-        HOST_WORKSPACE = "/opt/odoo"
-        DOCKER_LOGIN = "docker_builong99"
-        DOCKER_CRED = credentials("docker_builong99")
-        DOCKER_IMG = "rslve-odoo-17"
-        DOCKER_REBUILD = false
-        
-        HOST_SERVICE_NAME = "rslve-erp"
-        HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
-        HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
-        UPGRADE_YAML_PATH = "/opt/odoo/custom_addons/upgrade.yaml"
-
-
+        // ==================== DO NOT CHANGE ======================
         SETUP_FOLDER = "./.cicd/1_setup"
         BUILD_FOLDER = "./.cicd/2_build"
         SYNC_FOLDER = "./.cicd/3_sync"
         TEST_FOLDER = "./.cicd/4_test"
         UPGRADE_FOLDER = "./.cicd/5_upgrade"
+        // ==================== END OF DO NOT CHANGE ======================
 
-        PSQL = credentials("longbui_psql")
-        PSQL_HOST = "postgres"
+        SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
+        SCM_BRANCH = "17.0"
+        SCM_CREDENTIAL = "longbui99_github"
+
+        HOST_CREDENTIAL = "longbui_azure_ssh"
+        HOST_IP = "20.41.116.177"
+        HOST_CREDS = credentials("longbui_azure_ssh")
+        HOST_WORKSPACE = "/opt/odoo"
+        HOST_SERVICE_NAME = "rslve-erp"
+        HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
+        HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
+        HOST_UPGRADE_YAML_PATH = "/opt/odoo/custom_addons/upgrade.yaml"
+
+        DOCKER_LOGIN = "docker_builong99"
+        DOCKER_CRED = credentials("docker_builong99")
+        DOCKER_IMG = "rslve-odoo-17"
+        DOCKER_REBUILD = false
+
+        PSQL = credentials("psql_credential")
+        PSQL_HOST = "psql_host"
     }
 
     stages {
@@ -94,7 +96,7 @@ pipeline {
                     sh """
                         ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 
                         'cd $HOST_WORKSPACE \
-                        && python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH\
+                        && python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $HOST_UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH\
                         && sudo chmod +x $UPGRADE_FOLDER/upgrade.sh
                         && $UPGRADE_FOLDER/upgrade.sh' 
                     """

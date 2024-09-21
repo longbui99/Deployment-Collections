@@ -62,7 +62,7 @@ pipeline {
                 echo "============================ 3. SYNC ====================================================="
                 sshagent(['longbui_azure_ssh']) {
                     echo "============================ 3.1 SYNC CODE================================================"
-                    sh """ ssh $HOST_CREDS_USR@HOST_WORKSPACE -o StrictHostKeyChecking=no 'rm -rf $/' """
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 'rm -rf $HOST_WORKSPACE/' """
                     sh """ rsync -avzO --exclude "__pycache__" -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "$env.WORKSPACE/" "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" """
                     echo "============================ 3.2 PULL LATEST IMAGE========================================"
                     sh """ docker rmi "$DOCKER_CRED_USR/$DOCKER_IMG" && docker pull "$DOCKER_CRED_USR/$DOCKER_IMG" """

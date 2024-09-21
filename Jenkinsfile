@@ -23,7 +23,7 @@ pipeline {
                     rm -rf .git
                 """
                 echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
-                sh "sleep 10000"
+                sh "sleep 3000"
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",
                 credentialsId: "$SCM_CREDENTIAL"

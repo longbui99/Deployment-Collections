@@ -45,7 +45,7 @@ pipeline {
                 echo "============================ 2. BUILD ====================================================="
                 script {
                     echo DOCKER_REBUILD
-                    if (env.DOCKER_REBUILD){
+                    if (env.DOCKER_REBUILD == true){
                         echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
                         docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
                             def customImage = docker.build("$DOCKER_CRED_USR/$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")

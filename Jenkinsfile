@@ -44,6 +44,7 @@ pipeline {
             steps {
                 echo "============================ 2. BUILD ====================================================="
                 script {
+                    echo DOCKER_REBUILD
                     if (env.DOCKER_REBUILD){
                         echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
                         docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {

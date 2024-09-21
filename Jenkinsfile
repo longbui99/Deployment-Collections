@@ -39,9 +39,11 @@ pipeline {
             steps {
                 echo "============================ 2. BUILD ====================================================="
                 echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
-                docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
-                    def customImage = docker.build("$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
-                    customImage.push()
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
+                        def customImage = docker.build("$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
+                        customImage.push()
+                    }
                 }
             }
         }

@@ -12,7 +12,7 @@ pipeline {
         DOCKER_LOGIN = "docker_builong99"
         DOCKER_CRED = credentials("docker_builong99")
         DOCKER_IMG = "rslve-odoo-17"
-        DOCKER_REBUILD = true
+        DOCKER_REBUILD = false
         
         HOST_SERVICE_NAME = "rslve-erp"
 

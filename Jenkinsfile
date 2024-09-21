@@ -44,7 +44,6 @@ pipeline {
             steps {
                 echo "============================ 2. BUILD ====================================================="
                 script {
-                    echo DOCKER_REBUILD
                     if (env.DOCKER_REBUILD == true){
                         echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
                         docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
@@ -83,7 +82,7 @@ pipeline {
             steps {
                 echo "============================ 6. DEPLOY ====================================================="
                 sshagent(['longbui_azure_ssh']) {
-                    sh """ ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "systemctl restart $HOST_SERVICE_NAME """
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 'sudo systemctl restart $HOST_SERVICE_NAME' """
                 }
 
             }

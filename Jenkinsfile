@@ -20,7 +20,6 @@ pipeline {
                 sh """
                     mkdir -p .cicd
                     mv ./* ./.cicd
-                    rm -rf .git
                 """
                 echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
                 git url: "$SCM_REPO_URL",

@@ -9,6 +9,7 @@ pipeline {
         HOST_CREDS = credentials("longbui_azure_ssh")
         HOST_WORKSPACE = "/opt/odoo"
         DOCKER_LOGIN = "docker_builong99"
+        DOCKER_CRED = credentials("docker_builong99")
         DOCKER_IMG = "rslve-odoo-17"
 
 
@@ -42,7 +43,7 @@ pipeline {
                 echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
-                        def customImage = docker.build("$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
+                        def customImage = docker.build("$DOCKER_CRED_USR/$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
                         customImage.push()
                     }
                 }

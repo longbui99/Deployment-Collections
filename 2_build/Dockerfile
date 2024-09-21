@@ -1,26 +1,36 @@
 FROM ubuntu:jammy
+MAINTAINER longbui.net
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
-# Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG en_US.UTF-8
 
-# Retrieve the target architecture to install the correct wkhtmltopdf package
 ARG TARGETARCH
 
-# Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
+
+# FROM python:3.10.14-slim-bookworm
+COPY requirements.txt /etc/
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive \
     apt-get install -y --no-install-recommends \
+		postgresql \
+		postgresql-client \
+		adduser \
+		libldap2-dev \
+		libsasl2-dev \
+		build-essential \
         ca-certificates \
         curl \
         dirmngr \
         fonts-noto-cjk \
         gnupg \
         libssl-dev \
+        libpq-dev \
         node-less \
         npm \
+		python3-venv \
+		python3-wheel \
         python3-magic \
         python3-num2words \
         python3-odf \
@@ -36,10 +46,15 @@ RUN apt-get update && \
         python3-watchdog \
         python3-xlrd \
         python3-xlwt \
-        xz-utils && \
-    if [ -z "${TARGETARCH}" ]; then \
+        xz-utils \
+        # Additional package
+        python3-cffi \
+        python3-dev \
+        libxml2-dev libxslt1-dev zlib1g-dev libsasl2-dev libldap2-dev build-essential libssl-dev libffi-dev libmysqlclient-dev libjpeg-dev libpq-dev libjpeg8-dev liblcms2-dev libblas-dev libatlas-base-dev \
+    && if [ -z "${TARGETARCH}" ]; then \
         TARGETARCH="$(dpkg --print-architecture)"; \
     fi; \
+    # install wkhtmltopdf
     WKHTMLTOPDF_ARCH=${TARGETARCH} && \
     case ${TARGETARCH} in \
     "amd64") WKHTMLTOPDF_ARCH=amd64 && WKHTMLTOPDF_SHA=967390a759707337b46d1c02452e2bb6b2dc6d59  ;; \
@@ -49,9 +64,8 @@ RUN apt-get update && \
     && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_${WKHTMLTOPDF_ARCH}.deb \
     && echo ${WKHTMLTOPDF_SHA} wkhtmltox.deb | sha1sum -c - \
     && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
-    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb;
 
-# install latest postgresql-client
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
     && GNUPGHOME="$(mktemp -d)" \
     && export GNUPGHOME \
@@ -63,42 +77,17 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main' > /etc/a
     && apt-get update  \
     && apt-get install --no-install-recommends -y postgresql-client \
     && rm -f /etc/apt/sources.list.d/pgdg.list \
-    && rm -rf /var/lib/apt/lists/*;
+    && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --no-cache-dir -r /etc/requirements.txt \
+    && pip3 install psycopg2-binary
+    # Clean app cache
+RUN apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf var/lib/apt/lists \
+    # Create Odoo folder
+    && mkdir -p /var/lib/odoo /opt/odoo /etc/odoo \
+    && useradd -mUu 1000 -s /bin/bash odoo \
+    && chown -R odoo:odoo /var/lib/odoo /opt/odoo /etc/odoo
 
 # Install rtlcss (on Debian buster)
-RUN npm install -g rtlcss;
-
-ENV LANG en_US.UTF-8;
-ENV LANGUAGE en_US:en;
-
-# Install rtlcss (on Debian buster)
-
-FROM python:3.10.14-slim-bookworm
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive \
-        apt-get install -y --no-install-recommends \ 
-        libjpeg62-turbo libjpeg62-turbo-dev \
-        gcc \
-        bzr zip unzip \
-        pysassc \
-        build-essential \
-        locales \
-        libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev \
-        libfontconfig1 libxrender1 libxext6 \
-        fontconfig xfonts-75dpi xfonts-base \
-        liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev libpq-dev \
-        libqt5core5a libqt5gui5 libqt5network5 libqt5printsupport5 libqt5svg5 libqt5webkit5 libqt5widgets5 \
-        libxml2-dev libxslt1-dev ldap-utils \
-        libtiff5-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
-        lsb-release locales \
-        geoip-database xmlsec1 libxmlsec1-dev pkg-config;
-
-COPY odoo17-requirements.txt /etc/
-RUN pip3 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir --upgrade setuptools wheel debugpy && \
-    pip3 install --no-cache-dir -r /etc/odoo17-requirements.txt \
-    pip3 install psycopg[binary]; \
-    apt-get autoremove -y && \
-    apt-get clean
-
+RUN npm install -g rtlcss

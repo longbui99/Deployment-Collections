@@ -1,6 +1,7 @@
 pipeline {
     agent any
     environment {
+
         SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
         SCM_BRANCH = "17.0"
         SCM_CREDENTIAL = "longbui99_github"
@@ -11,6 +12,9 @@ pipeline {
         DOCKER_LOGIN = "docker_builong99"
         DOCKER_CRED = credentials("docker_builong99")
         DOCKER_IMG = "rslve-odoo-17"
+        DOCKER_REBUILD = true
+        
+        HOST_SERVICE_NAME = "rslve-erp"
 
 
         SETUP_FOLDER = "./.cicd/1_setup"
@@ -22,7 +26,6 @@ pipeline {
 
     stages {
         stage('1.Setup') {
-            
             steps {
                 echo "============================ 1. SETUP ====================================================="
                 echo "============================ 1.1 MAKE CICD FOLDER ========================================="
@@ -40,11 +43,15 @@ pipeline {
         stage("2.Build"){
             steps {
                 echo "============================ 2. BUILD ====================================================="
-                echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
-                        def customImage = docker.build("$DOCKER_CRED_USR/$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
-                        customImage.push()
+                    if (env.DOCKER_REBUILD){
+                        echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
+                        docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
+                            def customImage = docker.build("$DOCKER_CRED_USR/$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
+                            customImage.push()
+                        }
+                    } else {
+                        echo "============================ 2.1 SKIP BUILD & PUSH DOCKER IMMAGE =============================" 
                     }
                 }
             }
@@ -52,15 +59,12 @@ pipeline {
         stage("3. Sync"){
             steps {
                 echo "============================ 3. SYNC ====================================================="
-                // sshagent(['longbui_azure_ssh']) {
-                //     sh """
-                //     rsync -avzO \
-                //         --exclude "__pycache__" \
-                //         -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" \
-                //         "$env.WORKSPACE/" \
-                //         "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" \
-                //     """
-                // }
+                sshagent(['longbui_azure_ssh']) {
+                    echo "============================ 3.1 SYNC CODE================================================"
+                    sh """ rsync -avzO --exclude "__pycache__" -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "$env.WORKSPACE/" "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" """
+                    echo "============================ 3.1 PULL LATEST IMAGE========================================"
+                    sh """ docker rmi "$DOCKER_CRED_USR/$DOCKER_IMG" && docker pull "$DOCKER_CRED_USR/$DOCKER_IMG" """
+                }
             }
         }
         stage("4. Test"){
@@ -76,6 +80,10 @@ pipeline {
         stage("6. Deployment"){
             steps {
                 echo "============================ 6. DEPLOY ====================================================="
+                sshagent(['longbui_azure_ssh']) {
+                    sh """ "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "systemctl restart $HOST_SERVICE_NAME" """
+                }
+
             }
         }
     }

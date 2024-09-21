@@ -9,6 +9,14 @@ pipeline {
         HOST_CREDS = credentials("longbui_azure_ssh")
         HOST_WORKSPACE = "/opt/odoo"
         DOCKER_LOGIN = "builong99_docker"
+        DOCKER_IMG = "rslve-odoo-17"
+
+
+        SETUP_FOLDER = "./.cicd/1_setup"
+        BUILD_FOLDER = "./.cicd/2_build"
+        SETUP_FOLDER = "./.cicd/1_setup"
+        SETUP_FOLDER = "./.cicd/1_setup"
+        SETUP_FOLDER = "./.cicd/1_setup"
     }
 
     stages {
@@ -30,8 +38,11 @@ pipeline {
         stage("2.Build"){
             steps {
                 echo "============================ 2. BUILD ====================================================="
-                echo "============================ 2.1 PULL GITHUB PROJECT RESOURCE =============================" 
-
+                echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
+                docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
+                    def customImage = docker.build("$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
+                    customImage.push()
+                }
             }
         }
         stage("3. Sync"){

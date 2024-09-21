@@ -14,9 +14,9 @@ pipeline {
 
         SETUP_FOLDER = "./.cicd/1_setup"
         BUILD_FOLDER = "./.cicd/2_build"
-        SETUP_FOLDER = "./.cicd/1_setup"
-        SETUP_FOLDER = "./.cicd/1_setup"
-        SETUP_FOLDER = "./.cicd/1_setup"
+        SYNC_FOLDER = "./.cicd/1_setup"
+        TEST_FOLDER = "./.cicd/1_setup"
+        UPGRADE_FOLDER = "./.cicd/1_setup"
     }
 
     stages {

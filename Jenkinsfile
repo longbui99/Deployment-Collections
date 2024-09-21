@@ -15,13 +15,19 @@ pipeline {
         DOCKER_REBUILD = false
         
         HOST_SERVICE_NAME = "rslve-erp"
+        HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
+        HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
+        UPGRADE_YAML_PATH = "/opt/odoo/custom_addons/upgrade.yaml"
 
 
         SETUP_FOLDER = "./.cicd/1_setup"
         BUILD_FOLDER = "./.cicd/2_build"
-        SYNC_FOLDER = "./.cicd/1_setup"
-        TEST_FOLDER = "./.cicd/1_setup"
-        UPGRADE_FOLDER = "./.cicd/1_setup"
+        SYNC_FOLDER = "./.cicd/3_sync"
+        TEST_FOLDER = "./.cicd/4_test"
+        UPGRADE_FOLDER = "./.cicd/5_upgrade"
+
+        PSQL = credentials("longbui_psql")
+        PSQL_HOST = "postgres"
     }
 
     stages {
@@ -63,6 +69,7 @@ pipeline {
                     echo "============================ 3.1 SYNC CODE================================================"
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 'rm -rf $HOST_WORKSPACE/' """
                     sh """ rsync -avzO --exclude="__pycache__" --exclude=.git -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "$env.WORKSPACE/" "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" """
+                    
                     echo "============================ 3.2 PULL LATEST IMAGE========================================"
                     sh """ docker rmi "$DOCKER_CRED_USR/$DOCKER_IMG" && docker pull "$DOCKER_CRED_USR/$DOCKER_IMG" """
                 }
@@ -76,6 +83,22 @@ pipeline {
         stage("5. Upgrade"){
             steps {
                 echo "============================ 5. UPGRADE ====================================================="
+
+                echo "============================ 5.1 GET THE LIST OF DATABASE ==================================="
+                script {
+                    env.DATABASES = sh(returnStdout: true, script: "PGPASSWORD=$PSQL_PSW psql -h $PSQL_HOST -U $PSQL_USR -d postgres -c '\\l'")                    
+                }
+
+                echo "============================ 5.2 GENERATE & RUN UPGRADE BASH SCRIPT ==============================="
+                sshagent(['longbui_azure_ssh']) {
+                    sh """
+                        ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 
+                        'cd $HOST_WORKSPACE \
+                        && python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH\
+                        && sudo chmod +x $UPGRADE_FOLDER/upgrade.sh
+                        && $UPGRADE_FOLDER/upgrade.sh' 
+                    """
+                }   
             }
         }
         stage("6. Deployment"){

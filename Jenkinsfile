@@ -29,7 +29,7 @@ pipeline {
         DOCKER_REBUILD = false
 
         PSQL = credentials("psql_credential")
-        PSQL_HOST = "psql_host"
+        PSQL_HOST = credentials("psql_host")
     }
 
     stages {

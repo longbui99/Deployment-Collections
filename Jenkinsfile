@@ -12,6 +12,7 @@ pipeline {
 
     stages {
         stage('Pull') {
+            echo "$HOST_SAMPLE"
             steps {
                 git url: "$SCM_REPO_URL",
                 branch: "$SCM_BRANCH",

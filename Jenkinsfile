@@ -19,7 +19,7 @@ pipeline {
                 echo "============================ 1.1 MAKE CICD FOLDER ========================================="
                 sh """
                     mkdir -p copy
-                    mv ./(!copy) ./copy
+                    mv ./!(copy) ./copy
                 """
                 echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
                 git url: "$SCM_REPO_URL",

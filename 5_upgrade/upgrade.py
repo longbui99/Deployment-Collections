@@ -1,13 +1,13 @@
 import os
-import sys
 import argparse
 import yaml
 
 
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Upgrade Parser")
-    parser.add_argument("-f", "--upgrade_file", help="An integer will be increased by 1 and printed.", type=str, required=True)
+    parser.add_argument("-f", "--upgrade_file", help="An integer will be increased by 1 and printed.", required=True)
     parser.add_argument("-d", "--db_list", help="Database List", type=str, required=True)
     parser.add_argument("-c", "--config_path", help="Config Path", type=str, required=True)
     parser.add_argument("-e", "--execution_path", help="Odoo Bin Execution File", type=str, required=True)
@@ -32,18 +32,18 @@ if __name__ == "__main__":
         return command
 
     final_commands = []
-    if isinstance(args.db_list, str):
+    if isinstance(args.db_list, str) and args.db_list.lower().strip() not in ("true", "false"):
         dblist = args.db_list.split(",")
     else:
-        dblist = False
-    if yaml_data['databases'] and dblist:
-        dblist = [db for db in yaml_data['databases'] if db in dblist]
+        dblist = []
+    if yaml_data['databases']:
+        dblist = [db for db in yaml_data['databases'] if dblist and db in dblist or True]
     for db in dblist:
         final_commands.append(format_command(db))
     final_bash = "\n".join(final_commands)
     print("==========Final Bash==========")
     print(final_bash)
-
-    with open("./upgrade.sh", 'w') as f:
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    with open(f"{dirname}/upgrade.sh", 'w') as f:
         f.write(final_bash)
         f.close()

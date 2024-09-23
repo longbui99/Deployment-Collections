@@ -3,3 +3,4 @@ upgrade_modules:
 install_modules:
   - sample
 databases:
+  - longbui

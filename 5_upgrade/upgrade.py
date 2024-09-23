@@ -32,7 +32,7 @@ if __name__ == "__main__":
         return command
 
     final_commands = []
-    if isinstance(args.dblist, str):
+    if isinstance(args.db_list, str):
         dblist = args.db_list.split(",")
     else:
         dblist = False

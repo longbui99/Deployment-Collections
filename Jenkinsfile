@@ -31,6 +31,8 @@ pipeline {
 
         PSQL = credentials("psql_credential")
         PSQL_HOST = credentials("psql_host")
+
+        DATABASE_UPGRADE_CHECK = false
     }
 
     stages {
@@ -89,7 +91,9 @@ pipeline {
 
                 echo "============================ 5.1 GET THE LIST OF DATABASE ==================================="
                 script {
-                    env.DATABASES = sh(returnStdout: true, script: "PGPASSWORD=$PSQL_PSW psql -h $PSQL_HOST -p 5432 -U $PSQL_USR -d postgres -c '\\l'")                    
+                    if (env.DATABASE_UPGRADE_CHECK == true){
+                        env.DATABASES = sh(returnStdout: true, script: "PGPASSWORD=$PSQL_PSW psql -h $PSQL_HOST -p 5432 -U $PSQL_USR -d postgres -c '\\l'")     
+                    }               
                 }
 
                 echo "============================ 5.2 GENERATE & RUN UPGRADE BASH SCRIPT ==============================="

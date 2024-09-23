@@ -102,7 +102,7 @@ pipeline {
                 sshagent(['longbui_azure_ssh']) {
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $HOST_UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH' """
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'sudo chmod +x $UPGRADE_FOLDER/upgrade.sh' """
-                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT '.$UPGRADE_FOLDER/upgrade.sh' """
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT '$UPGRADE_FOLDER/upgrade.sh' """
                 }   
             }
         }

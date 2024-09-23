@@ -11,7 +11,7 @@ pipeline {
         UPGRADE_FOLDER = "/opt/odoo/.cicd/5_upgrade"
         HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
         HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
-        HOST_UPGRADE_YAML_PATH = "/opt/odoo/custom_addons/upgrade.yaml"
+        HOST_UPGRADE_YAML_PATH = "/opt/odoo/.cicd/5_upgrade/upgrade.yaml"
         // ==================== END OF DO NOT CHANGE ======================
 
         SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"

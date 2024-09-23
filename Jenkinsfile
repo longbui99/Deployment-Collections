@@ -94,7 +94,7 @@ pipeline {
                     if (env.DATABASE_UPGRADE_CHECK == true){
                         env.DATABASES = sh(returnStdout: true, script: "PGPASSWORD=$PSQL_PSW psql -h $PSQL_HOST -p 5432 -U $PSQL_USR -d postgres -c '\\l'")     
                     } else {
-                        env.DATABASE = false
+                        env.DATABASES = false
                     }              
                 }
 

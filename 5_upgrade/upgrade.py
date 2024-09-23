@@ -32,8 +32,11 @@ if __name__ == "__main__":
         return command
 
     final_commands = []
-    dblist = args.db_list.split(",")
-    if yaml_data['databases']:
+    if isinstance(args.dblist, str):
+        dblist = args.db_list.split(",")
+    else:
+        dblist = False
+    if yaml_data['databases'] and dblist:
         dblist = [db for db in yaml_data['databases'] if db in dblist]
     for db in dblist:
         final_commands.append(format_command(db))

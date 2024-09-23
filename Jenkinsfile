@@ -22,6 +22,7 @@ pipeline {
         HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
         HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
         HOST_UPGRADE_YAML_PATH = "/opt/odoo/custom_addons/upgrade.yaml"
+        SSH_TIMEOUT = 10
 
         DOCKER_LOGIN = "docker_builong99"
         DOCKER_CRED = credentials("docker_builong99")
@@ -69,7 +70,7 @@ pipeline {
                 echo "============================ 3. SYNC ====================================================="
                 sshagent(['longbui_azure_ssh']) {
                     echo "============================ 3.1 SYNC CODE================================================"
-                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 'rm -rf $HOST_WORKSPACE/' """
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'rm -rf $HOST_WORKSPACE/' """
                     sh """ rsync -avzO --exclude="__pycache__" --exclude=.git -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "$env.WORKSPACE/" "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" """
                     
                     echo "============================ 3.2 PULL LATEST IMAGE========================================"
@@ -94,7 +95,7 @@ pipeline {
                 echo "============================ 5.2 GENERATE & RUN UPGRADE BASH SCRIPT ==============================="
                 sshagent(['longbui_azure_ssh']) {
                     sh """
-                        ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 
+                        ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT
                         'cd $HOST_WORKSPACE \
                         && python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $HOST_UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH\
                         && sudo chmod +x $UPGRADE_FOLDER/upgrade.sh
@@ -107,7 +108,7 @@ pipeline {
             steps {
                 echo "============================ 6. DEPLOY ====================================================="
                 sshagent(['longbui_azure_ssh']) {
-                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no 'sudo systemctl restart $HOST_SERVICE_NAME' """
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'sudo systemctl restart $HOST_SERVICE_NAME' """
                 }
 
             }

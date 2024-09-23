@@ -44,6 +44,6 @@ if __name__ == "__main__":
     print("==========Final Bash==========")
     print(final_bash)
 
-    with open("upgrade.sh", 'w') as f:
+    with open("./upgrade.sh", 'w') as f:
         f.write(final_bash)
         f.close()

@@ -14,8 +14,8 @@ pipeline {
         HOST_UPGRADE_YAML_PATH = "/opt/odoo/.cicd/5_upgrade/upgrade.yaml"
         // ==================== END OF DO NOT CHANGE ======================
 
-        SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
-        SCM_BRANCH = "17.0"
+        SCM_REPO_URL = "https://github.com/longbui99/cicd"
+        SCM_BRANCH = "odoo-jenkin-base"
         SCM_CREDENTIAL = "longbui99_github"
 
         HOST_CREDENTIAL = "longbui_azure_ssh"
@@ -45,10 +45,12 @@ pipeline {
                     mkdir -p .cicd
                     mv ./* ./.cicd
                 """
-                echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
-                git url: "$SCM_REPO_URL",
-                branch: "$SCM_BRANCH",
-                credentialsId: "$SCM_CREDENTIAL"
+                dir("$WORKSPACE/.cicd"){
+                    echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
+                    git url: "$SCM_REPO_URL",
+                    branch: "$SCM_BRANCH",
+                    credentialsId: "$SCM_CREDENTIAL"
+                }
             }
         }
         stage("2.Build"){

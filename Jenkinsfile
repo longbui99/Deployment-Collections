@@ -3,15 +3,15 @@ pipeline {
     environment {
 
         // ==================== DO NOT CHANGE ======================
-        HOST_WORKSPACE = "/opt/odoo"
-        SETUP_FOLDER = "/opt/odoo/.cicd/1_setup"
-        BUILD_FOLDER = "/opt/odoo/.cicd/2_build"
-        SYNC_FOLDER = "/opt/odoo/.cicd/3_sync"
-        TEST_FOLDER = "/opt/odoo/.cicd/4_test"
-        UPGRADE_FOLDER = "/opt/odoo/.cicd/5_upgrade"
-        HOST_CONFIG_PATH = "/opt/odoo/odoo.conf"
-        HOST_EXECUTION_PATH = "/opt/odoo/odoo/odoo-bin"
-        HOST_UPGRADE_YAML_PATH = "/opt/odoo/.cicd/5_upgrade/upgrade.yaml"
+        HOST_WORKSPACE = "/opt/test"
+        SETUP_FOLDER = "/opt/test/.cicd/1_setup"
+        BUILD_FOLDER = "/opt/test/.cicd/2_build"
+        SYNC_FOLDER = "/opt/test/.cicd/3_sync"
+        CONFIG_FOLDER = "/opt/test/.cicd/4_config"
+        UPGRADE_FOLDER = "/opt/test/.cicd/5_upgrade"
+        HOST_CONFIG_PATH = "/opt/test/odoo.conf"
+        HOST_EXECUTION_PATH = "/opt/test/odoo/odoo-bin"
+        HOST_UPGRADE_YAML_PATH = "/opt/test/.cicd/5_upgrade/upgrade.yaml"
         // ==================== END OF DO NOT CHANGE ======================
 
         SCM_REPO_URL = "https://github.com/longbui99/WorkTracking.git"
@@ -22,15 +22,13 @@ pipeline {
         HOST_IP = "20.41.116.177"
         HOST_CREDS = credentials("longbui_azure_ssh")
         HOST_SERVICE_NAME = "rslve-erp"
+        HOST_ENVIROMENT_FILE = ""
         SSH_TIMEOUT = 10
 
-        DOCKER_LOGIN = "docker_builong99"
-        DOCKER_CRED = credentials("docker_builong99")
-        DOCKER_IMG = "rslve-odoo-17"
+        DOCKER_HUB_LOGIN = "docker_builong99"
+        DOCKER_HUB_CRED = credentials("docker_builong99")
+        DOCKER_HUB_IMG = "builong99/rslve-odoo-new:17"
         DOCKER_REBUILD = false
-
-        PSQL = credentials("psql_credential")
-        PSQL_HOST = credentials("psql_host")
 
         DATABASE_UPGRADE_CHECK = false
     }
@@ -44,6 +42,7 @@ pipeline {
                     rm -rf .cicd
                     mkdir -p .cicd
                     mv ./* ./.cicd
+                    mv .cicd cicd
                 """
                 echo "============================ 1.2 PULL GITHUB PROJECT RESOURCE ============================="
                 git url: "$SCM_REPO_URL",
@@ -57,8 +56,8 @@ pipeline {
                 script {
                     if (env.DOCKER_REBUILD == true){
                         echo "============================ 2.1 BUILD & PUSH DOCKER IMMAGE =============================" 
-                        docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_LOGIN") {
-                            def customImage = docker.build("$DOCKER_CRED_USR/$DOCKER_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
+                        docker.withRegistry('https://registry.hub.docker.com', "$DOCKER_HUB_LOGIN") {
+                            def customImage = docker.build("$DOCKER_HUB_CRED_USR/$DOCKER_HUB_IMG", "-f $BUILD_FOLDER/Dockerfile $BUILD_FOLDER")
                             customImage.push()
                         }
                     } else {
@@ -70,36 +69,31 @@ pipeline {
         stage("3. Sync"){
             steps {
                 echo "============================ 3. SYNC ====================================================="
-                sshagent(['longbui_azure_ssh']) {
+                sshagent([env.HOST_CREDENTIAL]) {
                     echo "============================ 3.1 SYNC CODE================================================"
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'rm -rf $HOST_WORKSPACE/' """
                     sh """ rsync -avzO --exclude="__pycache__" --exclude=.git -e "ssh -l $HOST_CREDS_USR -o StrictHostKeyChecking=no" "$env.WORKSPACE/" "$HOST_CREDS_USR@$HOST_IP:$HOST_WORKSPACE/" """
                     
                     echo "============================ 3.2 PULL LATEST IMAGE========================================"
-                    sh """ docker rmi "$DOCKER_CRED_USR/$DOCKER_IMG" && docker pull "$DOCKER_CRED_USR/$DOCKER_IMG" """
+                    sh """ docker rmi "$DOCKER_HUB_CRED_USR/$DOCKER_HUB_IMG" && docker pull "$DOCKER_HUB_CRED_USR/$DOCKER_HUB_IMG" """
                 }
             }
         }
-        stage("4. Test"){
+        stage("4. CONFIG"){
             steps {
-                echo "============================ 4. TEST ====================================================="
+                echo "============================ 4. CONFIG ====================================================="
+                echo "============================ 4.1 GENERATE CONFIG FILE ======================================"
+                sshagent([env.HOST_CREDENTIAL]) {
+                    sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'python3 $CONFIG_FOLDER/generate_config.py -e $HOST_ENVIROMENT_FILE"""
+                }
             }
         }
         stage("5. Upgrade"){
             steps {
                 echo "============================ 5. UPGRADE ====================================================="
 
-                echo "============================ 5.1 GET THE LIST OF DATABASE ==================================="
-                script {
-                    if (env.DATABASE_UPGRADE_CHECK == true){
-                        env.DATABASES = sh(returnStdout: true, script: "PGPASSWORD=$PSQL_PSW psql -h $PSQL_HOST -p 5432 -U $PSQL_USR -d postgres -c '\\l'")     
-                    } else {
-                        env.DATABASES = false
-                    }              
-                }
-
-                echo "============================ 5.2 GENERATE & RUN UPGRADE BASH SCRIPT ==============================="
-                sshagent(['longbui_azure_ssh']) {
+                echo "============================ 5.1 GENERATE & RUN UPGRADE BASH SCRIPT ==============================="
+                sshagent([env.HOST_CREDENTIAL]) {
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'python3 $UPGRADE_FOLDER/upgrade.py -c $HOST_CONFIG_PATH -d $DATABASES -f $HOST_UPGRADE_YAML_PATH -e $HOST_EXECUTION_PATH' """
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'sudo chmod +x $UPGRADE_FOLDER/upgrade.sh' """
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT '$UPGRADE_FOLDER/upgrade.sh' """
@@ -109,10 +103,9 @@ pipeline {
         stage("6. Deployment"){
             steps {
                 echo "============================ 6. DEPLOY ====================================================="
-                sshagent(['longbui_azure_ssh']) {
+                sshagent([env.HOST_CREDENTIAL]) {
                     sh """ ssh $HOST_CREDS_USR@$HOST_IP -o StrictHostKeyChecking=no -o ConnectTimeout=$SSH_TIMEOUT 'sudo systemctl restart $HOST_SERVICE_NAME' """
                 }
-
             }
         }
     }

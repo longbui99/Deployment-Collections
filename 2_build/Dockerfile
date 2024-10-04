@@ -10,6 +10,7 @@ ARG TARGETARCH
 
 # FROM python:3.10.14-slim-bookworm
 COPY requirements.txt /etc/
+COPY python3-requirements.txt /etc/
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive \
@@ -79,6 +80,7 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main' > /etc/a
     && rm -f /etc/apt/sources.list.d/pgdg.list \
     && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir -r /etc/requirements.txt \
+    && pip3 install --no-cache-dir -r /etc/python3-requirements.txt \
     && pip3 install psycopg2-binary
     # Clean app cache
 RUN apt-get autoremove -y \

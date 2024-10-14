@@ -1,0 +1,5 @@
+upgrade_modules:
+  - rslve_base
+install_modules:
+databases:
+  - production
